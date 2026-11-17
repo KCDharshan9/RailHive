@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Revenue{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Fare and collection</p>
+    <h1>Revenue analysis</h1>
+    <p class="page-lead">Revenue by travel class, quota, payment mode and booking channel.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Monthly revenue</h2>
+        <p class="card-subtitle">Gross fare revenue by travel month.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartRevenueMonthly" role="img" aria-label="Monthly revenue line chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Revenue by class</h2>
+        <p class="card-subtitle">Share of gross revenue by reserved class.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartRevenueClass" role="img" aria-label="Revenue share by class"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Revenue by quota</h2>
+        <p class="card-subtitle">Gross revenue for each booking quota.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-sm">
+          <canvas id="chartRevenueQuota" role="img" aria-label="Revenue by quota chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Payment modes</h2>
+        <p class="card-subtitle">Share of gross revenue by payment mode.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-sm">
+          <canvas id="chartRevenuePayment" role="img" aria-label="Revenue by payment mode"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Booking channels</h2>
+        <p class="card-subtitle">Bookings received through each channel.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-sm">
+          <canvas id="chartRevenueChannel" role="img" aria-label="Bookings by channel chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-7">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Class revenue detail</h2>
+        <p class="card-subtitle">Bookings, passengers and average fare by class.</p>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Class</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Passengers</th>
+              <th scope="col" class="text-end">Revenue</th>
+              <th scope="col" class="text-end">Avg fare</th>
+              <th scope="col" class="text-end">Revenue share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.class_revenue %}
+            <tr>
+              <td><span class="class-tag">{{ row.travel_class }}</span></td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.passengers|num }}</td>
+              <td class="text-end">{{ row.revenue|inr }}</td>
+              <td class="text-end">{{ row.avg_fare|inr }}</td>
+              <td class="text-end">{{ row.share_pct|pct }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6"><div class="empty-state">No class revenue data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card data-card mb-4">
+      <div class="card-header">
+        <h2 class="card-title">Quota revenue</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Quota</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Revenue</th>
+              <th scope="col" class="text-end">Avg fare</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.quota_revenue %}
+            <tr>
+              <td><span class="quota-tag">{{ row.quota }}</span></td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.revenue|inr }}</td>
+              <td class="text-end">{{ row.avg_fare|inr }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No quota data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card data-card">
+      <div class="card-header">
+        <h2 class="card-title">Payments and channels</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Group</th>
+              <th scope="col">Value</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.payments %}
+            <tr>
+              <td>Payment</td>
+              <td>{{ row.payment_mode }}</td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.revenue|inr }}</td>
+            </tr>
+            {% endfor %}
+            {% for row in analytics.channels %}
+            <tr>
+              <td>Channel</td>
+              <td>{{ row.channel }}</td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.revenue|inr }}</td>
+            </tr>
+            {% endfor %}
+            {% if not analytics.payments and not analytics.channels %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No payment data is available yet.</div></td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+name: bda-project
+
+services:
+  hive:
+    image: apache/hive:4.2.1
+    container_name: hive4
+    hostname: hive4
+    environment:
+      SERVICE_NAME: hiveserver2
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    volumes:
+      - ./data:/data
+      - ./sql:/sql
+    restart: unless-stopped

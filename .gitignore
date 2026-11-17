@@ -1,0 +1,34 @@
+# Runtime
+.venv/
+.tmp/
+
+# Python bytecode and packaging
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Test and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Generated data, reports and site output
+data/reference/
+data/raw/
+data/results/
+data/processed/
+website/data/analytics.json
+website/data/bookings_sample.json
+website/data/analytics.db
+dist/
+docs/
+report/
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

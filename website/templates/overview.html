@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Network summary</p>
+    <h1>Reservation overview</h1>
+    <p class="page-lead">Bookings, revenue and service performance across the reserved network.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+{% set kpis = analytics.kpis %}
+<section class="row g-3 mb-4">
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-navy">
+      <div class="card-body">
+        <div class="kpi-label">Total bookings</div>
+        <div class="kpi-value">{{ kpis.total_bookings|num }}</div>
+        <div class="kpi-note">Unique reservation records</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-teal">
+      <div class="card-body">
+        <div class="kpi-label">Passengers</div>
+        <div class="kpi-value">{{ kpis.total_passengers|num }}</div>
+        <div class="kpi-note">Passenger rows in the period</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-blue">
+      <div class="card-body">
+        <div class="kpi-label">Net revenue</div>
+        <div class="kpi-value">{{ kpis.net_revenue|inr_compact }}</div>
+        <div class="kpi-note">Gross revenue less refunds</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-slate">
+      <div class="card-body">
+        <div class="kpi-label">Average fare</div>
+        <div class="kpi-value">{{ kpis.avg_fare|inr }}</div>
+        <div class="kpi-note">Per passenger journey</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-amber">
+      <div class="card-body">
+        <div class="kpi-label">Cancellation rate</div>
+        <div class="kpi-value">{{ kpis.cancellation_rate|pct }}</div>
+        <div class="kpi-note">Cancelled share of passengers</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="card kpi-card h-100 accent-red">
+      <div class="card-body">
+        <div class="kpi-label">Average delay</div>
+        <div class="kpi-value">{{ kpis.avg_delay_minutes|num(1) }} min</div>
+        <div class="kpi-note">Across all operated trains</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Monthly bookings and revenue</h2>
+        <p class="card-subtitle">Bookings by travel month with gross revenue on the right axis.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartMonthly" role="img" aria-label="Monthly bookings and revenue chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card chart-card mb-4">
+      <div class="card-header">
+        <h2 class="card-title">Revenue by class</h2>
+        <p class="card-subtitle">Share of gross revenue.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-sm">
+          <canvas id="chartClassRevenue" role="img" aria-label="Revenue share by travel class"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="card chart-card">
+      <div class="card-header">
+        <h2 class="card-title">Current status mix</h2>
+        <p class="card-subtitle">Final status of all passenger rows.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-sm">
+          <canvas id="chartStatusMix" role="img" aria-label="Booking status mix"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card data-card">
+  <div class="card-header d-flex flex-column flex-md-row justify-content-between gap-2">
+    <div>
+      <h2 class="card-title">Top routes</h2>
+      <p class="card-subtitle">Highest booking volume routes in the analysis period.</p>
+    </div>
+    <a class="btn btn-sm btn-outline-primary align-self-start" href="{{ page_url('routes') }}">All routes</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Route</th>
+          <th scope="col">From</th>
+          <th scope="col">To</th>
+          <th scope="col" class="text-end">Bookings</th>
+          <th scope="col" class="text-end">Passengers</th>
+          <th scope="col" class="text-end">Revenue</th>
+          <th scope="col" class="text-end">Avg fare</th>
+          <th scope="col" class="text-end">Avg delay</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in analytics.routes[:10] %}
+        <tr>
+          <td><span class="route-code">{{ row.route }}</span></td>
+          <td>{{ row.from_station }}</td>
+          <td>{{ row.to_station }}</td>
+          <td class="text-end">{{ row.bookings|num }}</td>
+          <td class="text-end">{{ row.passengers|num }}</td>
+          <td class="text-end">{{ row.revenue|inr }}</td>
+          <td class="text-end">{{ row.avg_fare|inr }}</td>
+          <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8"><div class="empty-state">No route data is available yet.</div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

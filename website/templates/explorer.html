@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Explorer{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Record level view</p>
+    <h1>Booking explorer</h1>
+    <p class="page-lead">Filter reservation records by train, class, status, date, station or PNR.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+<section class="card filter-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title">Filters</h2>
+    <p class="card-subtitle">Leave a field empty to include all values.</p>
+  </div>
+  <div class="card-body">
+    <form id="explorerForm" method="get" action="{{ page_url('explorer') }}"
+          data-initial-page="{{ initial.page }}">
+      <div class="row g-3">
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterPnr">PNR</label>
+          <input class="form-control" id="filterPnr" name="pnr" inputmode="numeric"
+                 maxlength="10" value="{{ filters.get('pnr', '') }}"
+                 placeholder="10 digit PNR">
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterTrain">Train</label>
+          <input class="form-control" id="filterTrain" name="train"
+                 value="{{ filters.get('train', '') }}"
+                 placeholder="Number or name">
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterClass">Class</label>
+          <select class="form-select" id="filterClass" name="travel_class">
+            <option value="">All classes</option>
+            {% for value in class_options %}
+            <option value="{{ value }}" {% if filters.get('travel_class') == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterQuota">Quota</label>
+          <select class="form-select" id="filterQuota" name="quota">
+            <option value="">All quotas</option>
+            {% for value in quota_options %}
+            <option value="{{ value }}" {% if filters.get('quota') == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterStatus">Status</label>
+          <select class="form-select" id="filterStatus" name="status">
+            <option value="">All statuses</option>
+            {% for value in status_options %}
+            <option value="{{ value }}" {% if filters.get('status') == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterStation">Station</label>
+          <input class="form-control" id="filterStation" name="station"
+                 value="{{ filters.get('station', '') }}"
+                 placeholder="Station code">
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterFromDate">Travel from</label>
+          <input class="form-control" id="filterFromDate" name="from_date" type="date"
+                 value="{{ filters.get('from_date', '') }}">
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterToDate">Travel to</label>
+          <input class="form-control" id="filterToDate" name="to_date" type="date"
+                 value="{{ filters.get('to_date', '') }}">
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <label class="form-label" for="filterSize">Rows per page</label>
+          <select class="form-select" id="filterSize" name="size">
+            {% for value in size_options %}
+            <option value="{{ value }}" {% if filters.get('size', '25')|string == value|string %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">Apply filters</button>
+        <button type="button" class="btn btn-outline-secondary" id="explorerReset">Reset</button>
+        <button type="button" class="btn btn-outline-primary ms-md-auto" id="explorerDownload">Download CSV</button>
+      </div>
+      <div class="form-text mt-2">CSV export covers the rows on the current page.</div>
+    </form>
+  </div>
+</section>
+
+<section class="card data-card">
+  <div class="card-header d-flex flex-column flex-md-row justify-content-between gap-2">
+    <div>
+      <h2 class="card-title">Booking records</h2>
+      <p class="card-subtitle" id="resultSummary">
+        {{ initial.total|num }} records. Page {{ initial.page }} of {{ initial.pages }}.
+      </p>
+    </div>
+    <span class="mode-chip" id="dataMode">{% if static_mode %}Offline sample{% else %}Server data{% endif %}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover data-table explorer-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">PNR</th>
+          <th scope="col">Train</th>
+          <th scope="col">Travel date</th>
+          <th scope="col">From</th>
+          <th scope="col">To</th>
+          <th scope="col">Class</th>
+          <th scope="col">Quota</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Fare</th>
+          <th scope="col" class="text-end">Delay</th>
+        </tr>
+      </thead>
+      <tbody id="explorerRows">
+        {% for row in initial.rows %}
+        <tr>
+          <td><span class="pnr-cell">{{ row.pnr }}</span></td>
+          <td>
+            <div class="cell-primary">{{ row.train_number }}</div>
+            <div class="cell-secondary">{{ row.train_name }}</div>
+          </td>
+          <td>{{ row.travel_date }}</td>
+          <td>
+            <div class="cell-primary">{{ row.from_station_code }}</div>
+            <div class="cell-secondary">{{ row.from_station_name }}</div>
+          </td>
+          <td>
+            <div class="cell-primary">{{ row.to_station_code }}</div>
+            <div class="cell-secondary">{{ row.to_station_name }}</div>
+          </td>
+          <td><span class="class-tag">{{ row.travel_class }}</span></td>
+          <td><span class="quota-tag">{{ row.quota }}</span></td>
+          <td><span class="status-badge status-{{ row.current_status|lower }}">{{ row.current_status }}</span></td>
+          <td class="text-end">{{ row.fare|inr }}</td>
+          <td class="text-end">{% if row.delay_minutes %}{{ row.delay_minutes|num }} min{% else %}On time{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10"><div class="empty-state">No bookings match the current filters.</div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <span class="pagination-info" id="paginationInfo">Page {{ initial.page }} of {{ initial.pages }}</span>
+    <nav aria-label="Explorer pagination">
+      <ul class="pagination pagination-sm mb-0" id="explorerPagination"></ul>
+    </nav>
+  </div>
+</section>
+
+<noscript>
+  <div class="alert alert-info mt-3 mb-0" role="alert">
+    JavaScript is disabled. The table shows the first page for the supplied filters.
+    Use the form to submit a server side query.
+  </div>
+</noscript>
+{% endblock %}
+
+{% block data_scripts %}
+{% if static_mode %}
+<script>
+  window.BOOKINGS_SAMPLE = {{ bookings_sample|tojson }};
+</script>
+{% endif %}
+{% endblock %}

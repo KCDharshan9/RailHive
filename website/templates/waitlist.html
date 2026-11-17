@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Waitlist{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Confirmation and cancellations</p>
+    <h1>Waitlist performance</h1>
+    <p class="page-lead">Confirmation outcomes by class, cancellation trends and refund reasons.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Status by class</h2>
+        <p class="card-subtitle">Final status split for each reserved class.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartStatusByClass" role="img" aria-label="Stacked status by class chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Confirmation by class</h2>
+        <p class="card-subtitle">Confirmed share and average waitlist position.</p>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Class</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Confirmed</th>
+              <th scope="col" class="text-end">RAC</th>
+              <th scope="col" class="text-end">Waitlist</th>
+              <th scope="col" class="text-end">Cancelled</th>
+              <th scope="col" class="text-end">Confirmation</th>
+              <th scope="col" class="text-end">Avg WL pos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.status %}
+            <tr>
+              <td><span class="class-tag">{{ row.travel_class }}</span></td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.confirmed|num }}</td>
+              <td class="text-end">{{ row.rac|num }}</td>
+              <td class="text-end">{{ row.waitlist|num }}</td>
+              <td class="text-end">{{ row.cancelled|num }}</td>
+              <td class="text-end">{{ row.confirmation_rate|pct }}</td>
+              <td class="text-end">{{ row.avg_waitlist_position|num(1) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8"><div class="empty-state">No status data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Monthly cancellations</h2>
+        <p class="card-subtitle">Cancelled passengers and the monthly cancellation rate.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartCancellations" role="img" aria-label="Monthly cancellations chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Cancellation reasons</h2>
+        <p class="card-subtitle">Recorded reason for cancelled bookings.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartCancelReasons" role="img" aria-label="Cancellation reasons chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-7">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Monthly cancellation detail</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col" class="text-end">Cancellations</th>
+              <th scope="col" class="text-end">Cancellation rate</th>
+              <th scope="col" class="text-end">Refund amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.cancellations %}
+            <tr>
+              <td>{{ row.month }}</td>
+              <td class="text-end">{{ row.cancellations|num }}</td>
+              <td class="text-end">{{ row.cancellation_rate|pct }}</td>
+              <td class="text-end">{{ row.refund_amount|inr }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No cancellation data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Reason detail</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Reason</th>
+              <th scope="col" class="text-end">Cancellations</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.cancel_reasons %}
+            <tr>
+              <td>{{ row.reason }}</td>
+              <td class="text-end">{{ row.count|num }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="2"><div class="empty-state">No cancellation reasons are available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

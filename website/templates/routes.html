@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Routes{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Demand by corridor</p>
+    <h1>Route performance</h1>
+    <p class="page-lead">The busiest origin and destination pairs and the trains that carry them.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Bookings by route</h2>
+        <p class="card-subtitle">Top twelve routes ranked by booking volume.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame chart-frame-tall">
+          <canvas id="chartRoutes" role="img" aria-label="Bookings by route chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Route leaders</h2>
+        <p class="card-subtitle">Revenue and average delay for the top routes.</p>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Route</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Revenue</th>
+              <th scope="col" class="text-end">Avg delay</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.routes[:8] %}
+            <tr>
+              <td>
+                <div class="cell-primary">{{ row.route }}</div>
+                <div class="cell-secondary">{{ row.from_station }} to {{ row.to_station }}</div>
+              </td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.revenue|inr }}</td>
+              <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No route data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card data-card mb-4">
+  <div class="card-header d-flex flex-column flex-md-row justify-content-between gap-2">
+    <div>
+      <h2 class="card-title">Top trains by revenue</h2>
+      <p class="card-subtitle">Leading services across all reserved classes.</p>
+    </div>
+    <a class="btn btn-sm btn-outline-primary align-self-start" href="{{ page_url('revenue') }}">Revenue detail</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Train</th>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col" class="text-end">Bookings</th>
+          <th scope="col" class="text-end">Passengers</th>
+          <th scope="col" class="text-end">Revenue</th>
+          <th scope="col" class="text-end">Avg delay</th>
+          <th scope="col" class="text-end">Cancel rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in analytics.trains[:25] %}
+        <tr>
+          <td><span class="train-number">{{ row.train_number }}</span></td>
+          <td>{{ row.train_name }}</td>
+          <td><span class="type-tag">{{ row.train_type }}</span></td>
+          <td class="text-end">{{ row.bookings|num }}</td>
+          <td class="text-end">{{ row.passengers|num }}</td>
+          <td class="text-end">{{ row.revenue|inr }}</td>
+          <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+          <td class="text-end">{{ row.cancel_rate|pct }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8"><div class="empty-state">No train data is available yet.</div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card data-card">
+  <div class="card-header">
+    <h2 class="card-title">Top forty routes</h2>
+    <p class="card-subtitle">Complete route ranking used by the site.</p>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Route</th>
+          <th scope="col">From</th>
+          <th scope="col">To</th>
+          <th scope="col" class="text-end">Bookings</th>
+          <th scope="col" class="text-end">Passengers</th>
+          <th scope="col" class="text-end">Revenue</th>
+          <th scope="col" class="text-end">Avg fare</th>
+          <th scope="col" class="text-end">Avg delay</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in analytics.routes %}
+        <tr>
+          <td><span class="route-code">{{ row.route }}</span></td>
+          <td>{{ row.from_station }}</td>
+          <td>{{ row.to_station }}</td>
+          <td class="text-end">{{ row.bookings|num }}</td>
+          <td class="text-end">{{ row.passengers|num }}</td>
+          <td class="text-end">{{ row.revenue|inr }}</td>
+          <td class="text-end">{{ row.avg_fare|inr }}</td>
+          <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8"><div class="empty-state">No route data is available yet.</div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

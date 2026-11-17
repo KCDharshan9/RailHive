@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Delays{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Punctuality</p>
+    <h1>Delay analysis</h1>
+    <p class="page-lead">Late running by train type, zone and travel month. Late means more than 15 minutes.</p>
+  </div>
+  <div class="period-chip">{{ analytics.meta.period }}</div>
+</div>
+
+<section class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Delay by train type</h2>
+        <p class="card-subtitle">Average delay in minutes for each service type.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartDelayType" role="img" aria-label="Average delay by train type chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Delay by zone</h2>
+        <p class="card-subtitle">Average delay in minutes for each railway zone.</p>
+      </div>
+      <div class="card-body">
+        <div class="chart-frame">
+          <canvas id="chartDelayZone" role="img" aria-label="Average delay by zone chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card chart-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title">Monthly delay trend</h2>
+    <p class="card-subtitle">Average delay and the percentage of late passengers by travel month.</p>
+  </div>
+  <div class="card-body">
+    <div class="chart-frame">
+      <canvas id="chartDelayMonthly" role="img" aria-label="Monthly delay trend chart"></canvas>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-6">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Late percentage by train type</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Train type</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Avg delay</th>
+              <th scope="col" class="text-end">Late percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.delay_by_type %}
+            <tr>
+              <td><span class="type-tag">{{ row.train_type }}</span></td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+              <td class="text-end">{{ row.late_pct|pct }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No delay data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card data-card h-100">
+      <div class="card-header">
+        <h2 class="card-title">Late percentage by zone</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover data-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Zone</th>
+              <th scope="col" class="text-end">Bookings</th>
+              <th scope="col" class="text-end">Avg delay</th>
+              <th scope="col" class="text-end">Late percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.delay_by_zone %}
+            <tr>
+              <td><span class="zone-tag">{{ row.zone }}</span></td>
+              <td class="text-end">{{ row.bookings|num }}</td>
+              <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+              <td class="text-end">{{ row.late_pct|pct }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4"><div class="empty-state">No zone delay data is available yet.</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card data-card mt-4">
+  <div class="card-header">
+    <h2 class="card-title">Monthly delay detail</h2>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col" class="text-end">Bookings</th>
+          <th scope="col" class="text-end">Average delay</th>
+          <th scope="col" class="text-end">Late percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in analytics.delay_monthly %}
+        <tr>
+          <td>{{ row.month }}</td>
+          <td class="text-end">{{ row.bookings|num }}</td>
+          <td class="text-end">{{ row.avg_delay|num(1) }} min</td>
+          <td class="text-end">{{ row.late_pct|pct }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4"><div class="empty-state">No monthly delay data is available yet.</div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Overview{% endblock %} | Railway Reservation Analytics</title>
+  <link rel="stylesheet" href="{{ asset('vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ page_url('index') }}">
+          <span class="brand-mark">RRA</span>
+          <span class="brand-text">Railway Reservation Analytics</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto">
+            {% set nav_items = [
+              ('overview', 'index', 'Overview'),
+              ('routes', 'routes', 'Routes'),
+              ('revenue', 'revenue', 'Revenue'),
+              ('waitlist', 'waitlist', 'Waitlist'),
+              ('delays', 'delays', 'Delays'),
+              ('explorer', 'explorer', 'Explorer')
+            ] %}
+            {% for key, page_key, label in nav_items %}
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == key %}active{% endif %}"
+                 href="{{ page_url(page_key) }}">{{ label }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container page-main">
+    {% if analytics.meta.engine == 'fixture' %}
+    <div class="alert alert-warning fixture-note" role="alert">
+      <strong>Fixture data.</strong> website/data/analytics.json was not found,
+      so this page shows deterministic development data. Pipeline output will
+      replace it automatically.
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
+      <span>Railway Reservation Analytics</span>
+      <span class="footer-meta">
+        Period {{ analytics.meta.period }}.
+        {{ analytics.meta.bookings|num }} bookings across
+        {{ analytics.meta.trains|num }} trains.
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    window.ANALYTICS = {{ analytics|tojson }};
+    window.STATIC_MODE = {{ static_mode|tojson }};
+    window.BOOKINGS_ENDPOINT = {{ bookings_endpoint|tojson }};
+  </script>
+  {% block data_scripts %}{% endblock %}
+  <script src="{{ asset('vendor/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('vendor/chart.umd.min.js') }}"></script>
+  <script src="{{ asset('js/app.js') }}"></script>
+  <script src="{{ asset('js/charts.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
