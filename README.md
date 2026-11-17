@@ -57,9 +57,6 @@ Open http://127.0.0.1:5000 in your browser. Stop the server with Ctrl+C.
 
 ## Good to know
 
-- The report is built with `.\.venv\Scripts\python.exe scripts\make_report.py`
-  from the numbers in the results (report/report.docx). Fill in the
-  placeholders on the title page before submission.
 - No server needed: `scripts\export_static.py` writes a static site to
   `dist/` you can upload to Netlify or GitHub Pages. `render.yaml` is
   included for a free Render deployment of the Flask app.
